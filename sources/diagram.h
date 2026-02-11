@@ -97,6 +97,12 @@ class Diagram : public QGraphicsScene
 		static const qreal margin;
 		/// background color of diagram
 		static QColor background_color;
+		/// whether the canvas uses dark mode colors
+		static bool dark_canvas;
+		/// foreground color matching the current canvas mode
+		static QColor foregroundColor();
+		/// background color matching the current canvas mode
+		static QColor backgroundColor();
 		/// Hash containing max values for folio sequential autonums in this diagram
 		QHash <QString, QStringList> m_elmt_unitfolio_max;
 		QHash <QString, QStringList> m_elmt_tenfolio_max;

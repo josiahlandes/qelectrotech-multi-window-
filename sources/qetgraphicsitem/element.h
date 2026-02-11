@@ -239,6 +239,8 @@ class Element : public QetGraphicsItem
 		QList <Terminal *> m_terminals;
 		const QPicture m_picture;
 		const QPicture m_low_zoom_picture;
+		QPicture m_dark_picture;
+		QPicture m_dark_low_zoom_picture;
 		ElementData m_data;
 
 	private:

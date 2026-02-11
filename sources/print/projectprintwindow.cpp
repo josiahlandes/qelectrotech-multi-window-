@@ -171,7 +171,9 @@ ProjectPrintWindow::ProjectPrintWindow(QETProject *project, QPrinter *printer, Q
 #endif
 
 	m_backup_diagram_background_color = Diagram::background_color;
+	m_backup_dark_canvas = Diagram::dark_canvas;
 	Diagram::background_color = Qt::white;
+	Diagram::dark_canvas = false;
 }
 
 /**
@@ -182,6 +184,7 @@ ProjectPrintWindow::~ProjectPrintWindow()
 	delete ui;
 	delete m_printer;
 	Diagram::background_color = m_backup_diagram_background_color;
+	Diagram::dark_canvas = m_backup_dark_canvas;
 }
 
 /**

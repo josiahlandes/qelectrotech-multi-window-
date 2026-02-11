@@ -224,13 +224,20 @@ void Element::paint(
 	painter->save();
 	QPen pen;
 	QBrush brush;
+	if (Diagram::dark_canvas) {
+		pen.setColor(Qt::white);
+	}
 	painter->setPen(pen);
 	painter->setBrush(brush);
-	if (options && options->levelOfDetailFromTransform(painter->worldTransform()) < 0.5)
-	{
-		painter->drawPicture(0, 0, m_low_zoom_picture);
+	bool low_zoom = options && options->levelOfDetailFromTransform(painter->worldTransform()) < 0.5;
+	if (Diagram::dark_canvas) {
+		if (m_dark_picture.isNull()) {
+			ElementPictureFactory *epf = ElementPictureFactory::instance();
+			epf->getDarkPictures(m_location, m_dark_picture, m_dark_low_zoom_picture);
+		}
+		painter->drawPicture(0, 0, low_zoom ? m_dark_low_zoom_picture : m_dark_picture);
 	} else {
-		painter->drawPicture(0, 0, m_picture);
+		painter->drawPicture(0, 0, low_zoom ? m_low_zoom_picture : m_picture);
 	}
 
 	painter->restore(); //Restore the QPainter after use drawPicture

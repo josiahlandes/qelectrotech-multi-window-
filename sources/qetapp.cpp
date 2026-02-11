@@ -22,6 +22,7 @@
 #include "editor/ui/qetelementeditor.h"
 #include "elementscollectioncache.h"
 #include "factory/elementfactory.h"
+#include "diagram.h"
 #include "factory/elementpicturefactory.h"
 #include "projectview.h"
 #include "qetdiagrameditor.h"
@@ -1631,19 +1632,26 @@ void QETApp::useSystemPalette(bool use) {
 void QETApp::applyTheme(const QString &theme) {
 	qApp->setStyleSheet(QString());
 
+	QSettings settings;
+	bool dark_canvas = settings.value("darkcanvas", false).toBool();
+
 	if (theme == "dark") {
 		QPalette dark = darkPalette();
 		qApp->setPalette(dark);
-		// Minimal stylesheet for tooltip contrast and disabled menu items
 		qApp->setStyleSheet(
 			"QToolTip { color: #ffffff; background-color: #2d2d2d;"
 			" border: 1px solid #555555; }"
 		);
-	} else if (theme == "light") {
-		qApp->setPalette(initial_palette_);
+		// Enable dark canvas when dark theme is active
+		Diagram::dark_canvas = true;
+		Diagram::background_color = QColor(0x1e, 0x1e, 0x1e);
 	} else {
-		// "system" — restore whatever the OS gave us
-		qApp->setPalette(initial_palette_);
+		if (theme == "light")
+			qApp->setPalette(initial_palette_);
+		else
+			qApp->setPalette(initial_palette_);
+		Diagram::dark_canvas = false;
+		Diagram::background_color = Qt::white;
 	}
 }
 

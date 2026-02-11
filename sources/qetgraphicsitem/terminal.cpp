@@ -248,7 +248,7 @@ void Terminal::paint(
 		{
 			m_help_line_a = new QGraphicsLineItem(this);
 			QPen pen;
-			pen.setColor(Diagram::background_color == Qt::darkGray ? Qt::lightGray : Qt::darkGray);
+			pen.setColor(qGray(Diagram::background_color.rgb()) < 128 ? Qt::lightGray : Qt::darkGray);
 			m_help_line_a -> setPen(pen);
 		}
 

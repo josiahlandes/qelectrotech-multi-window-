@@ -226,6 +226,7 @@ void CrossRefItem::updateLabel()
 	qp.begin(&m_drawing);
 	QPen pen_;
 	pen_.setWidthF(0.5);
+	pen_.setColor(Diagram::foregroundColor());
 	qp.setPen(pen_);
 	qp.setFont(QETApp::diagramTextsFont(5));
 

@@ -507,6 +507,8 @@ void ElementPictureFactory::parseText(const QDomElement &dom, QPainter &painter,
 	}
 
 	QColor text_color(dom.attribute("color", "#000000"));
+	if (m_dark_mode)
+		text_color = invertForDark(text_color);
 
 		//Instantiate a QTextDocument (like the QGraphicsTextItem class)
 		//for generate the graphics rendering of the text
@@ -1085,6 +1087,119 @@ void ElementPictureFactory::setPainterStyle(const QDomElement &dom, QPainter &pa
 		}
 	}
 
+	// Dark mode: invert near-black/near-white colors
+	if (m_dark_mode) {
+		pen.setColor(invertForDark(pen.color()));
+		if (brush.style() != Qt::NoBrush)
+			brush.setColor(invertForDark(brush.color()));
+	}
+
 	painter.setPen(pen);
 	painter.setBrush(brush);
+}
+
+/**
+	@brief ElementPictureFactory::invertForDark
+	Swap near-black colors to white and near-white to dark,
+	leaving other colors untouched.
+	@param c : input color
+	@return adjusted color for dark canvas
+*/
+QColor ElementPictureFactory::invertForDark(const QColor &c) {
+	if (!c.isValid() || c.alpha() == 0)
+		return c;
+	int g = qGray(c.rgb());
+	if (g < 50)  return QColor(255, 255, 255, c.alpha());
+	if (g > 205) return QColor(0x20, 0x20, 0x20, c.alpha());
+	return c;
+}
+
+/**
+	@brief ElementPictureFactory::buildDark
+	Build dark-mode pictures for the element at location.
+	Uses the m_dark_mode flag so setPainterStyle and parseText
+	automatically apply color inversion.
+*/
+bool ElementPictureFactory::buildDark(const ElementsLocation &location) {
+	QDomElement dom = location.xml();
+
+	const auto elmt_version = QetVersion::fromXmlAttribute(dom);
+	if (!elmt_version.isNull() && QetVersion::currentVersion() < elmt_version)
+		return false;
+
+	int w, h, hot_x, hot_y;
+	if (!QET::attributeIsAnInteger(dom, QString("width"), &w) ||
+		!QET::attributeIsAnInteger(dom, QString("height"), &h) ||
+		!QET::attributeIsAnInteger(dom, QString("hotspot_x"), &hot_x) ||
+		!QET::attributeIsAnInteger(dom, QString("hotspot_y"), &hot_y))
+		return false;
+
+	m_dark_mode = true;
+
+	QPicture pic, low_pic;
+	primitives prim;
+
+	QPainter painter(&pic);
+	painter.setRenderHint(QPainter::Antialiasing, true);
+	painter.setRenderHint(QPainter::TextAntialiasing, true);
+	painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+	QPainter low_painter(&low_pic);
+	low_painter.setRenderHint(QPainter::Antialiasing, true);
+	low_painter.setRenderHint(QPainter::TextAntialiasing, true);
+	low_painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+	QPen tmp;
+	tmp.setWidthF(1.0);
+	tmp.setCosmetic(true);
+	tmp.setColor(Qt::white);
+	low_painter.setPen(tmp);
+
+	for (QDomNode node = dom.firstChild(); !node.isNull(); node = node.nextSibling()) {
+		QDomElement elmts = node.toElement();
+		if (elmts.isNull()) continue;
+		if (elmts.tagName() == "description") {
+			for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
+				QDomElement qde = n.toElement();
+				if (qde.isNull()) continue;
+				parseElement(qde, painter, prim);
+				primitives fake_prim;
+				parseElement(qde, low_painter, fake_prim);
+			}
+		}
+	}
+	painter.end();
+	low_painter.end();
+
+	m_dark_mode = false;
+
+	const auto uuid_ = location.uuid();
+	m_dark_pictures_H.insert(uuid_, pic);
+	m_dark_low_pictures_H.insert(uuid_, low_pic);
+	return true;
+}
+
+/**
+	@brief ElementPictureFactory::getDarkPictures
+	Get dark-mode pictures for the element at location.
+*/
+void ElementPictureFactory::getDarkPictures(const ElementsLocation &location, QPicture &picture, QPicture &low_picture) {
+	if (!location.exist()) return;
+
+	QUuid uuid = location.uuid();
+	if (Q_UNLIKELY(uuid.isNull())) {
+		build(location, &picture, &low_picture);
+		return;
+	}
+
+	if (m_dark_pictures_H.contains(uuid)) {
+		picture = m_dark_pictures_H.value(uuid);
+		low_picture = m_dark_low_pictures_H.value(uuid);
+	} else {
+		if (!m_pictures_H.contains(uuid))
+			build(location);
+		if (buildDark(location)) {
+			picture = m_dark_pictures_H.value(uuid);
+			low_picture = m_dark_low_pictures_H.value(uuid);
+		}
+	}
 }

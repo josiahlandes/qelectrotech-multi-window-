@@ -543,7 +543,7 @@ void DynamicElementTextItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		setDefaultTextColor(m_user_color);
 		m_user_color = QColor(); //m_user_color is now invalid
 		if(m_slave_Xref_item)
-			m_slave_Xref_item->setDefaultTextColor(Qt::black);
+			m_slave_Xref_item->setDefaultTextColor(Diagram::foregroundColor());
 	}
 
 	// Shift or no parent initiates movement of dynamic text, otherwise movement of parent element
@@ -781,7 +781,7 @@ bool DynamicElementTextItem::sceneEventFilter(QGraphicsItem *watched, QEvent *ev
 		return true;
 	}
 	else if(event->type() == QEvent::GraphicsSceneHoverLeave) {
-		m_slave_Xref_item->setDefaultTextColor(Qt::black);
+		m_slave_Xref_item->setDefaultTextColor(Diagram::foregroundColor());
 		return true;
 	}
 	else if(event->type() == QEvent::GraphicsSceneMouseDoubleClick) {

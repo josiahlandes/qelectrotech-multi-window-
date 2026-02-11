@@ -46,8 +46,8 @@ class ElementPictureFactory
 			QList<QVector<qreal>> m_arcs;
 			QList<QGraphicsSimpleTextItem*> m_texts;
 		};
-		
-		
+
+
 		/**
 			@brief instance
 			@return The instance of the factory
@@ -59,13 +59,13 @@ class ElementPictureFactory
 			{
 				mutex.lock();
 				if (!m_factory) {
-					m_factory = new ElementPictureFactory();	
+					m_factory = new ElementPictureFactory();
 				}
 				mutex.unlock();
 			}
 			return m_factory;
 		}
-		
+
 		/**
 			@brief dropInstance
 			Drop the instance of factory
@@ -83,16 +83,18 @@ class ElementPictureFactory
 		}
 
 		void getPictures(const ElementsLocation &location, QPicture &picture, QPicture &low_picture);
+		void getDarkPictures(const ElementsLocation &location, QPicture &picture, QPicture &low_picture);
 		QPixmap pixmap(const ElementsLocation &location);
 		ElementPictureFactory::primitives getPrimitives(const ElementsLocation &location);
-		
+
 	private:
 		ElementPictureFactory() {}
 		ElementPictureFactory (const ElementPictureFactory &);
 		ElementPictureFactory operator= (const ElementPictureFactory &);
 		~ElementPictureFactory();
-		
+
 		bool build(const ElementsLocation &location, QPicture *picture=nullptr, QPicture *low_picture=nullptr);
+		bool buildDark(const ElementsLocation &location);
 		void parseElement(const QDomElement &dom, QPainter &painter, primitives &prim) const;
 		void parseLine   (const QDomElement &dom, QPainter &painter, primitives &prim) const;
 		void parseRect   (const QDomElement &dom, QPainter &painter, primitives &prim) const;
@@ -102,12 +104,16 @@ class ElementPictureFactory
 		void parsePolygon(const QDomElement &dom, QPainter &painter, primitives &prim) const;
 		void parseText   (const QDomElement &dom, QPainter &painter, primitives &prim) const;
 		void setPainterStyle(const QDomElement &dom, QPainter &painter) const;
-		
+		static QColor invertForDark(const QColor &c);
+
 		QHash<QUuid, QPicture> m_pictures_H;
 		QHash<QUuid, QPicture> m_low_pictures_H;
+		QHash<QUuid, QPicture> m_dark_pictures_H;
+		QHash<QUuid, QPicture> m_dark_low_pictures_H;
 		QHash<QUuid, QPixmap> m_pixmap_H;
 		QHash<QUuid, primitives> m_primitives_H;
 		static ElementPictureFactory* m_factory;
+		mutable bool m_dark_mode = false;
 };
 
 #endif // ELEMENTPICTUREFACTORY_H
