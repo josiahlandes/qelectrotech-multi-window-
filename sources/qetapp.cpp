@@ -1502,25 +1502,6 @@ QList<QETElementEditor *> QETApp::elementEditors(QETProject *project) {
 	return(editors);
 }
 
-/**
-	@brief QETApp::receiveMessage
-	openFiles from message
-	@param instanceId Q_UNUSED
-	@param message
-*/
-void QETApp::receiveMessage(int instanceId, QByteArray message)
-{
-	Q_UNUSED(instanceId);
-
-	QString str(message);
-
-	if (str.startsWith("launched-with-args: "))
-	{
-		QString my_message(str.mid(20));
-		QStringList args_list = QET::splitWithSpaces(my_message);
-		openFiles(QETArguments(args_list));
-	}
-}
 
 /**
 	@param T a class inheriting QMainWindow

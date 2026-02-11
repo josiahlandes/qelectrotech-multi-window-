@@ -62,7 +62,6 @@ find_package(
  REQUIRED)
 
 include(../../cmake/fetch_kdeaddons.cmake)
-include(../../cmake/fetch_singleapplication.cmake)
 include(../../cmake/fetch_pugixml.cmake)
 
 enable_testing()

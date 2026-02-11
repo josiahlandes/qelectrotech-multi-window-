@@ -272,7 +272,6 @@ class QETApp : public QObject
 		void openTitleBlockTemplateFiles(const QStringList &);
 		void configureQET();
 		void aboutQET();
-		void receiveMessage(int instanceId, QByteArray message);
 	
 	private:
 		template <class T> QList<T *> detectWindows() const;

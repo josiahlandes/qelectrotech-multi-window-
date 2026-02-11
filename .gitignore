@@ -2,6 +2,8 @@
 .flatpak-builder
 # Qt build output
 *.user
+# CMake build directory
+build/
 # doxygen Doxyfile output
 doc/*
 !doc/QElectroTech.qch

@@ -18,10 +18,10 @@
 #include "machine_info.h"
 #include "qet.h"
 #include "qetapp.h"
-#include "singleapplication.h"
 #include "utils/macosxopenevent.h"
 #include "utils/qetsettings.h"
 
+#include <QApplication>
 #include <QStyleFactory>
 #include <QtConcurrentRun>
 
@@ -194,12 +194,11 @@ QGuiApplication::setHighDpiScaleFactorRoundingPolicy(QetSettings::hdpiScaleFacto
 #endif
 
 
-	SingleApplication app(argc, argv, true);
+	QApplication app(argc, argv);
 
 	// Use Fusion style on all platforms to enable consistent
 	// QPalette-based theming (light/dark mode support)
 	app.setStyle(QStyleFactory::create("Fusion"));
-
 #ifdef Q_OS_MACOS
 	//Handle the opening of QET when user double click on a .qet .elmt .tbt file
 	//or drop these same files to the QET icon of the dock
@@ -207,22 +206,8 @@ QGuiApplication::setHighDpiScaleFactorRoundingPolicy(QetSettings::hdpiScaleFacto
 	app.installEventFilter(&open_event);
 #endif
 
-	if (app.isSecondary())
-	{
-		QStringList arg_list = app.arguments();
-		//Remove the first argument, it's the binary file
-		arg_list.takeFirst();
-		QETArguments qetarg(arg_list);
-		QString message = "launched-with-args: " + QET::joinWithSpaces(
-					QStringList(qetarg.arguments()));
-		app.sendMessage(message.toUtf8());
-		return 0;
-	}
-
 	QETApp qetapp;
 	QETApp::instance()->installEventFilter(&qetapp);
-	QObject::connect(&app, &SingleApplication::receivedMessage,
-			 &qetapp, &QETApp::receiveMessage);
 
 	QtConcurrent::run([=]()
 	{
