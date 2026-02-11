@@ -41,7 +41,6 @@ include(cmake/developer_options.cmake)
 include(cmake/git_update_submodules.cmake)
 include(cmake/git_last_commit_sha.cmake)
 include(cmake/fetch_kdeaddons.cmake)
-include(cmake/fetch_singleapplication.cmake)
 include(cmake/fetch_pugixml.cmake)
 include(cmake/qet_compilation_vars.cmake)
 
@@ -91,7 +90,6 @@ target_link_libraries(
   PUBLIC
   PRIVATE
   pugixml::pugixml
-  SingleApplication::SingleApplication
   ${KF5_PRIVATE_LIBRARIES}
   ${QET_PRIVATE_LIBRARIES}
   )
