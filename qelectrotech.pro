@@ -72,10 +72,8 @@ DEFINES += QET_EXPORT_PROJECT_DB
 include(sources/PropertiesEditor/PropertiesEditor.pri)
 include(sources/QetGraphicsItemModeler/QetGraphicsItemModeler.pri)
 include(sources/QPropertyUndoCommand/QPropertyUndoCommand.pri)
-include(SingleApplication/singleapplication.pri)
 include(sources/QWidgetAnimation/QWidgetAnimation.pri)
 
-DEFINES += QAPPLICATION_CLASS=QApplication
 DEFINES += QT_MESSAGELOGCONTEXT
 DEFINES += GIT_COMMIT_SHA="\\\"$(shell git -C \""$$_PRO_FILE_PWD_"\" rev-parse --verify HEAD 2>/dev/null || true)\\\""
 

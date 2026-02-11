@@ -699,6 +699,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/utils/conductorcreator.h
   ${QET_DIR}/sources/utils/macosxopenevent.cpp
   ${QET_DIR}/sources/utils/macosxopenevent.h
+  ${QET_DIR}/sources/utils/qetfilelock.cpp
+  ${QET_DIR}/sources/utils/qetfilelock.h
   ${QET_DIR}/sources/utils/qetsettings.cpp
   ${QET_DIR}/sources/utils/qetsettings.h
   ${QET_DIR}/sources/utils/qetutils.cpp

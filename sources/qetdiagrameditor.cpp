@@ -35,6 +35,7 @@
 #include "qeticons.h"
 #include "qetmessagebox.h"
 #include "recentfiles.h"
+#include "utils/qetfilelock.h"
 #include "ui/bomexportdialog.h"
 #include "ui/diagrampropertieseditordockwidget.h"
 #include "ui/dialogwaiting.h"
@@ -1111,8 +1112,10 @@ bool QETDiagramEditor::openAndAddProject(
 	}
 
 	//Check if file is read only
+	bool force_read_only = false;
 	if (!filepath_info.isWritable())
 	{
+		force_read_only = true;
 		if (interactive) {
 			QET::QetMessageBox::warning(
 				this,
@@ -1120,6 +1123,26 @@ bool QETDiagramEditor::openAndAddProject(
 				tr("Il semblerait que le projet que vous essayez d'ouvrir ne "
 				"soit pas accessible en écriture. Il sera donc ouvert en "
 				"lecture seule.")
+			);
+		}
+	}
+
+	// Try to acquire a per-file lock to prevent concurrent editing
+	if (!force_read_only && !QETFileLock::tryLock(filepath))
+	{
+		force_read_only = true;
+		if (interactive) {
+			qint64 pid = 0;
+			QString hostname, appname;
+			QETFileLock::lockInfo(filepath, &pid, &hostname, &appname);
+			QET::QetMessageBox::warning(
+				this,
+				tr("Ouverture du projet en lecture seule", "message box title"),
+				tr("Ce projet est actuellement ouvert en écriture par "
+				"une autre instance de QElectroTech (PID: %1 sur %2). "
+				"Il sera ouvert en lecture seule.")
+					.arg(pid)
+					.arg(hostname)
 			);
 		}
 	}
@@ -1144,9 +1167,15 @@ bool QETDiagramEditor::openAndAddProject(
 				).arg(filepath)
 			);
 		}
+		QETFileLock::unlock(filepath);
 		delete project;
 		DialogWaiting::dropInstance();
 		return(false);
+	}
+
+	// Force read-only if we could not acquire the file lock
+	if (force_read_only) {
+		project->setReadOnly(true);
 	}
 
 	QETApp::projectsRecentFiles() -> fileWasOpened(filepath);
@@ -2087,6 +2116,9 @@ void QETDiagramEditor::projectWasClosed(ProjectView *project_view)
 	QETProject *project = project_view -> project();
 	if (project)
 	{
+		// Release the per-file lock before the project is deleted
+		QETFileLock::unlock(project->filePath());
+
 		pa -> elementsPanel().projectWasClosed(project);
 		m_element_collection_widget->removeProject(project);
 		undo_group.removeStack(project -> undoStack());

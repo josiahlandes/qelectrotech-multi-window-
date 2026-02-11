@@ -27,6 +27,7 @@
 #include "qeticons.h"
 #include "qetmessagebox.h"
 #include "qetproject.h"
+#include "utils/qetfilelock.h"
 #include "titleblock/qettemplateeditor.h"
 #include "ui/borderpropertieswidget.h"
 #include "ui/conductorpropertieswidget.h"
@@ -614,8 +615,22 @@ QETResult ProjectView::saveAs()
 {
 	if (!m_project) return(noProjectResult());
 
+	// Remember old path so we can transition the file lock
+	QString old_filepath = m_project->filePath();
+
 	QString filepath = askUserForFilePath();
 	if (filepath.isEmpty()) return(QETResult());
+
+	// Transition the file lock: release old, acquire new
+	if (!old_filepath.isEmpty()) {
+		QETFileLock::unlock(old_filepath);
+	}
+	if (!QETFileLock::tryLock(filepath)) {
+		m_project->setReadOnly(true);
+	} else {
+		m_project->setReadOnly(false);
+	}
+
 	return(doSave());
 }
 
