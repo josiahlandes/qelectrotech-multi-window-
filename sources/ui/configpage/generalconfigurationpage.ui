@@ -25,11 +25,31 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QCheckBox" name="m_use_system_color_cb">
-         <property name="text">
-          <string>Utiliser les couleurs du système</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="themeLayout">
+         <item>
+          <widget class="QLabel" name="m_theme_label">
+           <property name="text">
+            <string>Thème :</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="m_theme_cb"/>
+         </item>
+         <item>
+          <spacer name="themeSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="Line" name="line">
@@ -1090,7 +1110,7 @@ Vous pouvez spécifier ici la valeur par défaut de ce champ pour les éléments
  </widget>
  <tabstops>
   <tabstop>tabWidget</tabstop>
-  <tabstop>m_use_system_color_cb</tabstop>
+  <tabstop>m_theme_cb</tabstop>
   <tabstop>m_use_gesture_trackpad</tabstop>
   <tabstop>m_zoom_out_beyond_folio</tabstop>
   <tabstop>m_use_windows_mode_rb</tabstop>

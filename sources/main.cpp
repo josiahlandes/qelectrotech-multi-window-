@@ -195,12 +195,16 @@ QGuiApplication::setHighDpiScaleFactorRoundingPolicy(QetSettings::hdpiScaleFacto
 
 
 	SingleApplication app(argc, argv, true);
+
+	// Use Fusion style on all platforms to enable consistent
+	// QPalette-based theming (light/dark mode support)
+	app.setStyle(QStyleFactory::create("Fusion"));
+
 #ifdef Q_OS_MACOS
 	//Handle the opening of QET when user double click on a .qet .elmt .tbt file
 	//or drop these same files to the QET icon of the dock
 	MacOSXOpenEvent open_event;
 	app.installEventFilter(&open_event);
-	app.setStyle(QStyleFactory::create("Fusion"));
 #endif
 
 	if (app.isSecondary())
