@@ -361,7 +361,10 @@ void QETDiagramEditor::setUpActions()
 	m_grey_background -> setStatusTip (tr("Affiche la couleur de fond du folio en blanc ou en gris", "Status tip of white/grey background button"));
 	m_grey_background -> setCheckable (true);
 	connect (m_grey_background, &QAction::triggered, [this](bool checked) {
-		Diagram::background_color = checked ? Qt::darkGray : Qt::white;
+		if (Diagram::dark_canvas)
+			Diagram::background_color = checked ? QColor(0x2d, 0x2d, 0x2d) : QColor(0x1e, 0x1e, 0x1e);
+		else
+			Diagram::background_color = checked ? Qt::darkGray : Qt::white;
 		if (this->currentDiagramView() &&  this->currentDiagramView()->diagram())
 			this->currentDiagramView()->diagram()->update();
 	});

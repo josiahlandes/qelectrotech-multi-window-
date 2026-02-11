@@ -505,6 +505,9 @@ void Conductor::paint(QPainter *painter, const QStyleOptionGraphicsItem *options
 
 		// Set the color of conductor
 	QColor final_conductor_color(m_properties.color);
+	// On dark canvas, invert near-black conductor colors for visibility
+	if (Diagram::dark_canvas && qGray(final_conductor_color.rgb()) < 50)
+		final_conductor_color = Qt::white;
 	if (must_highlight_ == Normal) {
 		final_conductor_color = QColor::fromRgb(69, 137, 255, 255);
 	} else if (must_highlight_ == Alert) {
@@ -514,7 +517,7 @@ void Conductor::paint(QPainter *painter, const QStyleOptionGraphicsItem *options
 	} else {
 		if (Diagram *parent_diagram = diagram()) {
 			if (!parent_diagram -> drawColoredConductors()) {
-				final_conductor_color = Qt::black;
+				final_conductor_color = Diagram::foregroundColor();
 			}
 		}
 	}

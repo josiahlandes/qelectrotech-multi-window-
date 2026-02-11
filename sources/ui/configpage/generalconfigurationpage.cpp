@@ -74,7 +74,16 @@ GeneralConfigurationPage::GeneralConfigurationPage(QWidget *parent) :
 	ui->DiagramEditor_yKeyGridFine_sb->setValue(settings.value("diagrameditor/key_fine_Ygrid", 1).toInt());
 	ui->DiagramEditor_Grid_PointSize_min_sb->setValue(settings.value("diagrameditor/grid_pointsize_min", 1).toInt());
 	ui->DiagramEditor_Grid_PointSize_max_sb->setValue(settings.value("diagrameditor/grid_pointsize_max", 1).toInt());
-	ui->m_use_system_color_cb->setChecked(settings.value("usesystemcolors", "true").toBool());
+	// Theme selector: System / Light / Dark
+	ui->m_theme_cb->addItem(tr("Système"), QStringLiteral("system"));
+	ui->m_theme_cb->addItem(tr("Clair"), QStringLiteral("light"));
+	ui->m_theme_cb->addItem(tr("Sombre"), QStringLiteral("dark"));
+	{
+		QString theme = settings.value("theme", "system").toString();
+		int idx = ui->m_theme_cb->findData(theme);
+		if (idx < 0) idx = 0;
+		ui->m_theme_cb->setCurrentIndex(idx);
+	}
 	bool tabbed = settings.value("diagrameditor/viewmode", "tabbed") == "tabbed";
 	if(tabbed)
 		ui->m_use_tab_mode_rb->setChecked(true);
@@ -193,12 +202,12 @@ void GeneralConfigurationPage::applyConf()
 {
 	QSettings settings;
 	
-		//GLOBAL
-	bool was_using_system_colors = settings.value("usesystemcolors", "true").toBool();
-	bool must_use_system_colors  = ui->m_use_system_color_cb->isChecked();
-	settings.setValue("usesystemcolors", must_use_system_colors);
-	if (was_using_system_colors != must_use_system_colors) {
-		QETApp::instance()->useSystemPalette(must_use_system_colors);
+		//GLOBAL — theme
+	QString prev_theme = settings.value("theme", "system").toString();
+	QString new_theme  = ui->m_theme_cb->currentData().toString();
+	settings.setValue("theme", new_theme);
+	if (prev_theme != new_theme) {
+		QETApp::instance()->applyTheme(new_theme);
 	}
 	settings.setValue("border-columns_0",ui->m_border_0->isChecked());
 	settings.setValue("lang", ui->m_lang_cb->itemData(ui->m_lang_cb->currentIndex()).toString());

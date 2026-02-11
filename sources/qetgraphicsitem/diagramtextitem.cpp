@@ -50,7 +50,7 @@ void DiagramTextItem::build()
 		//set Zvalue at 10 to be upper than the DiagramImageItem
 	setZValue(10);
 	setAcceptHoverEvents(true);
-	setDefaultTextColor(Qt::black);
+	setDefaultTextColor(Diagram::foregroundColor());
 	setFont(QETApp::diagramTextsItemFont());
 	setFlags(QGraphicsItem::ItemIsSelectable|QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemSendsGeometryChanges);
 	setNoEditable(false);

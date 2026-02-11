@@ -217,7 +217,7 @@ void DiagramEventAddShape::updateHelpCross(const QPointF &p)
 		QPen pen;
 		pen.setWidthF(0.4);
 		pen.setCosmetic(true);
-		pen.setColor(Diagram::background_color == Qt::darkGray ? Qt::lightGray : Qt::darkGray);
+		pen.setColor(qGray(Diagram::background_color.rgb()) < 128 ? Qt::lightGray : Qt::darkGray);
 
 		QRectF rect = m_diagram->border_and_titleblock.insideBorderRect();
 

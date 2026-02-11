@@ -99,6 +99,7 @@ class ProjectPrintWindow : public QMainWindow
 		QPrinter *m_printer = nullptr;
 		QPrintPreviewWidget *m_preview=nullptr;
 		QColor m_backup_diagram_background_color;
+		bool m_backup_dark_canvas = false;
 		QHash<Diagram *, QCheckBox *> m_diagram_list_hash;
 };
 

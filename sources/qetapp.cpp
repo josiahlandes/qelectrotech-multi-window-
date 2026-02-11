@@ -22,6 +22,7 @@
 #include "editor/ui/qetelementeditor.h"
 #include "elementscollectioncache.h"
 #include "factory/elementfactory.h"
+#include "diagram.h"
 #include "factory/elementpicturefactory.h"
 #include "projectview.h"
 #include "qetdiagrameditor.h"
@@ -1601,20 +1602,107 @@ void QETApp::invertMainWindowVisibility(QWidget *window) {
 	false pour utiliser celles du theme en cours
 */
 void QETApp::useSystemPalette(bool use) {
-	if (use) {
-		qApp->setPalette(initial_palette_);
+	applyTheme(use ? "system" : "dark");
+}
+
+/**
+	@brief QETApp::applyTheme
+	Apply the given theme to the application.
+	@param theme : "system", "light", or "dark"
+*/
+void QETApp::applyTheme(const QString &theme) {
+	qApp->setStyleSheet(QString());
+
+	QSettings settings;
+	bool dark_canvas = settings.value("darkcanvas", false).toBool();
+
+	if (theme == "dark") {
+		QPalette dark = darkPalette();
+		qApp->setPalette(dark);
 		qApp->setStyleSheet(
-				"QAbstractScrollArea#mdiarea {"
-				"background-color -> setPalette(initial_palette_);"
-				"}"
-				);
+			"QToolTip { color: #ffffff; background-color: #2d2d2d;"
+			" border: 1px solid #555555; }"
+		);
+		// Enable dark canvas when dark theme is active
+		Diagram::dark_canvas = true;
+		Diagram::background_color = QColor(0x1e, 0x1e, 0x1e);
 	} else {
-		QFile file(configDir() + "/style.css");
-		file.open(QFile::ReadOnly);
-		QString styleSheet = QLatin1String(file.readAll());
-		qApp->setStyleSheet(styleSheet);
-		file.close();
+		if (theme == "light")
+			qApp->setPalette(initial_palette_);
+		else
+			qApp->setPalette(initial_palette_);
+		Diagram::dark_canvas = false;
+		Diagram::background_color = Qt::white;
 	}
+}
+
+/**
+	@brief QETApp::darkPalette
+	Build a QPalette that matches the Windows 10/11 dark theme.
+	Colors are chosen for WCAG AA contrast (>=4.5:1 for normal text).
+	@return QPalette configured for dark mode
+*/
+QPalette QETApp::darkPalette() {
+	QPalette p;
+
+	// Window & general background
+	const QColor windowBg(0x20, 0x20, 0x20);       // #202020
+	const QColor baseBg(0x19, 0x19, 0x19);          // #191919
+	const QColor altBase(0x2d, 0x2d, 0x2d);         // #2D2D2D
+	const QColor buttonBg(0x33, 0x33, 0x33);        // #333333
+
+	// Text
+	const QColor textColor(0xff, 0xff, 0xff);       // #FFFFFF
+	const QColor brightText(0xff, 0xff, 0xff);
+	const QColor placeholderText(0x80, 0x80, 0x80); // #808080
+	const QColor disabledText(0x6e, 0x6e, 0x6e);    // #6E6E6E
+
+	// Accent / selection (Windows default blue)
+	const QColor highlight(0x00, 0x78, 0xd4);       // #0078D4
+	const QColor highlightedText(0xff, 0xff, 0xff);
+	const QColor link(0x4c, 0xc2, 0xff);            // #4CC2FF
+
+	// Borders / mid tones
+	const QColor light(0x44, 0x44, 0x44);
+	const QColor midlight(0x3a, 0x3a, 0x3a);
+	const QColor dark(0x19, 0x19, 0x19);
+	const QColor mid(0x2d, 0x2d, 0x2d);
+	const QColor shadow(0x00, 0x00, 0x00);
+
+	// Active group
+	p.setColor(QPalette::Window,          windowBg);
+	p.setColor(QPalette::WindowText,      textColor);
+	p.setColor(QPalette::Base,            baseBg);
+	p.setColor(QPalette::AlternateBase,   altBase);
+	p.setColor(QPalette::ToolTipBase,     altBase);
+	p.setColor(QPalette::ToolTipText,     textColor);
+	p.setColor(QPalette::Text,            textColor);
+	p.setColor(QPalette::Button,          buttonBg);
+	p.setColor(QPalette::ButtonText,      textColor);
+	p.setColor(QPalette::BrightText,      brightText);
+	p.setColor(QPalette::Link,            link);
+	p.setColor(QPalette::Highlight,       highlight);
+	p.setColor(QPalette::HighlightedText, highlightedText);
+	p.setColor(QPalette::Light,           light);
+	p.setColor(QPalette::Midlight,        midlight);
+	p.setColor(QPalette::Dark,            dark);
+	p.setColor(QPalette::Mid,             mid);
+	p.setColor(QPalette::Shadow,          shadow);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+	p.setColor(QPalette::PlaceholderText, placeholderText);
+#endif
+
+	// Disabled group — dimmed text, same backgrounds
+	p.setColor(QPalette::Disabled, QPalette::WindowText,  disabledText);
+	p.setColor(QPalette::Disabled, QPalette::Text,        disabledText);
+	p.setColor(QPalette::Disabled, QPalette::ButtonText,  disabledText);
+	p.setColor(QPalette::Disabled, QPalette::HighlightedText, disabledText);
+	p.setColor(QPalette::Disabled, QPalette::Base,        windowBg);
+	p.setColor(QPalette::Disabled, QPalette::Window,      windowBg);
+	p.setColor(QPalette::Disabled, QPalette::Highlight,   QColor(0x40, 0x40, 0x40));
+	p.setColor(QPalette::Disabled, QPalette::Button,      windowBg);
+
+	return p;
 }
 
 /**
@@ -2139,15 +2227,24 @@ void QETApp::initFonts()
 
 /**
 	@brief QETApp::initStyle
-	Setup the gui style
+	Setup the gui style.
+	Reads the "theme" setting (values: "system", "light", "dark").
+	Migrates the legacy "usesystemcolors" boolean if present.
 */
 void QETApp::initStyle()
 {
 	initial_palette_ = qApp->palette();
 
-	//Apply or not the system style
 	QSettings settings;
-	useSystemPalette(settings.value("usesystemcolors", true).toBool());
+
+	// Migrate legacy setting
+	if (!settings.contains("theme") && settings.contains("usesystemcolors")) {
+		bool useSystem = settings.value("usesystemcolors", true).toBool();
+		settings.setValue("theme", useSystem ? "system" : "dark");
+	}
+
+	QString theme = settings.value("theme", "system").toString();
+	applyTheme(theme);
 }
 
 /**

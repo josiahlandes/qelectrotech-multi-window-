@@ -56,6 +56,23 @@ const qreal Diagram::margin = 5.0;
 	static variable to keep track of present background color of the diagram.
 */
 QColor		Diagram::background_color = Qt::white;
+bool		Diagram::dark_canvas = false;
+
+/**
+	@brief Diagram::foregroundColor
+	@return The foreground color for canvas items (white on dark, black on light).
+*/
+QColor Diagram::foregroundColor() {
+	return dark_canvas ? Qt::white : Qt::black;
+}
+
+/**
+	@brief Diagram::backgroundColor
+	@return The current canvas background color.
+*/
+QColor Diagram::backgroundColor() {
+	return background_color;
+}
 
 /**
 	@brief Diagram::Diagram
@@ -88,7 +105,7 @@ Diagram::Diagram(QETProject *project) :
 	conductor_setter_ -> setZValue(1000000);
 
 	QPen pen(Qt::NoBrush, 1.5, Qt::DashLine);
-	pen.setColor(Qt::black);
+	pen.setColor(Diagram::foregroundColor());
 	conductor_setter_ -> setPen(pen);
 
 	connect(&border_and_titleblock, &BorderTitleBlock::informationChanged, this, [this]() {
@@ -193,8 +210,9 @@ void Diagram::drawBackground(QPainter *p, const QRectF &r) {
 			 * else they shall be black in color.
 			 */
 		QPen pen;
-		Diagram::background_color == Qt::black? pen.setColor(Qt::white)
-							  : pen.setColor(Qt::black);
+		// Use brightness to decide grid color for any background
+		pen.setColor(qGray(Diagram::background_color.rgb()) < 128
+				 ? Qt::white : Qt::black);
 		pen.setCosmetic(true);
 		p->setPen(pen);
 
